@@ -1,0 +1,5 @@
+
+BASE_URL=https://url.com
+COINMARKETCAP_API_KEY=sua_api_key_aqui
+ENVIRONMENT=development
+DEBUG=true

@@ -105,7 +105,7 @@ lib/
 
 ### 1. **Clone o Repositório**
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/leocarminatti/challenge_mb.git
 cd challenge_mb
 ```
 

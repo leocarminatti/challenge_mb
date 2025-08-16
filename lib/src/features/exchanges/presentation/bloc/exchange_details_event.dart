@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/exchange.dart';
+import '../../domain/entities/exchange_asset.dart';
 
 abstract class ExchangeDetailsEvent extends Equatable {
   const ExchangeDetailsEvent();
@@ -25,4 +26,19 @@ class LoadMoreAssets extends ExchangeDetailsEvent {
 
   @override
   List<Object?> get props => [exchangeId];
+}
+
+class AppendAssets extends ExchangeDetailsEvent {
+  final List<ExchangeAsset> assets;
+
+  const AppendAssets(this.assets);
+}
+
+class AppendFailure extends ExchangeDetailsEvent {
+  final String message;
+
+  const AppendFailure(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

@@ -71,12 +71,7 @@ class _ExchangeDetailsPageState extends State<ExchangeDetailsPage> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ExchangeAssetsList(bloc: _exchangeDetailsBloc),
-            ),
-          ),
+          ExchangeAssetsList(bloc: _exchangeDetailsBloc),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),

@@ -1,3 +1,4 @@
+export 'exchange_asset_row.dart';
 export 'exchange_assets_table.dart';
 export 'exchanges_about_section.dart';
 export 'exchanges_assets_list.dart';

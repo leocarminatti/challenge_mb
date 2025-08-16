@@ -1,7 +1,7 @@
 import 'package:challenge_mb/core/infra/http/http_client.dart';
 import 'package:challenge_mb/src/features/exchanges/data/datasources/exchange_remote_datasource.dart';
 import 'package:challenge_mb/src/features/exchanges/domain/repositories/exchange_repository.dart';
-import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchange_assets_usecase.dart';
+import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchange_assets_stream_usecase.dart';
 import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchange_map_usecase.dart';
 import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchanges_by_ids_usecase.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchange_details_bloc.dart';
@@ -20,7 +20,8 @@ class MockGetExchangeMapUseCase extends Mock implements GetExchangeMapUseCase {}
 class MockGetExchangesByIdsUseCase extends Mock
     implements GetExchangesByIdsUseCase {}
 
-class MockGetExchangeAssetsUseCase extends Mock implements GetExchangeAssetsUseCase {}
+class MockGetExchangeAssetsStreamUseCase extends Mock
+    implements GetExchangeAssetsStreamUseCase {}
 
 class MockExchangesBloc extends Mock implements ExchangesBloc {}
 
@@ -47,8 +48,9 @@ class TestMocks {
     return MockGetExchangesByIdsUseCase();
   }
 
-  static GetExchangeAssetsUseCase createMockGetExchangeAssetsUseCase() {
-    return MockGetExchangeAssetsUseCase();
+  static GetExchangeAssetsStreamUseCase
+  createMockGetExchangeAssetsStreamUseCase() {
+    return MockGetExchangeAssetsStreamUseCase();
   }
 
   static void setupDataSourceMocks(MockHttpClient mockHttpClient) {}
@@ -58,6 +60,5 @@ class TestMocks {
   static void setupUseCaseMocks(
     MockGetExchangeMapUseCase mockGetExchangeMapUseCase,
     MockGetExchangesByIdsUseCase mockGetExchangesByIdsUseCase,
-    MockGetExchangeAssetsUseCase mockGetExchangeAssetsUseCase,
   ) {}
 }

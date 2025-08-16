@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/core.dart';
 import '../../domain/entities/exchange_asset.dart';
 import '../../domain/usecases/usecases.dart';
 import 'exchange_details_event.dart';
@@ -9,13 +12,14 @@ import 'exchange_details_state.dart';
 
 class ExchangeDetailsBloc
     extends Bloc<ExchangeDetailsEvent, ExchangeDetailsState> {
-  final GetExchangeAssetsUseCase _getExchangeAssetsUseCase;
+  final GetExchangeAssetsStreamUseCase _getExchangeAssetsStreamUseCase;
 
-  ExchangeDetailsBloc(this._getExchangeAssetsUseCase)
+  ExchangeDetailsBloc(this._getExchangeAssetsStreamUseCase)
     : super(ExchangeDetailsInitial()) {
-    on<LoadExchangeDetails>(_onLoadExchangeDetails);
-    on<_AppendAssets>(_onAppendAssets);
-    on<LoadMoreAssets>(_onLoadMoreAssets);
+    on<LoadExchangeDetails>(_onLoadExchangeDetails, transformer: restartable());
+    on<LoadMoreAssets>(_onLoadMoreAssets, transformer: droppable());
+    on<AppendAssets>(_onAppendAssets);
+    on<AppendFailure>((e, emit) => emit(ExchangeDetailsError(e.message)));
   }
 
   Future<void> _onLoadExchangeDetails(
@@ -28,52 +32,40 @@ class ExchangeDetailsBloc
     );
     emit(ExchangeDetailsLoadedWithLoadingAssets(base));
 
-    unawaited(_loadAndChunkAssets(event.exchange.id));
-  }
+    final stream = _getExchangeAssetsStreamUseCase(
+      event.exchange.id,
+      chunkSize: 200,
+    );
 
-  Future<void> _loadAndChunkAssets(String exchangeId) async {
-    final assetsResult = await _getExchangeAssetsUseCase(exchangeId);
-
-    assetsResult.fold(
-      (failure) => add(const _AppendAssets([], isError: true)),
-      (allAssets) async {
-        if (allAssets.isEmpty) {
-          add(const _AppendAssets([], total: 0));
-          return;
-        }
-
-        const chunkSize = 200;
-        for (var i = 0; i < allAssets.length; i += chunkSize) {
-          final end = (i + chunkSize < allAssets.length)
-              ? i + chunkSize
-              : allAssets.length;
-          final slice = allAssets.sublist(i, end);
-          add(_AppendAssets(slice, total: allAssets.length));
-          await Future.delayed(Duration.zero);
-        }
+    await emit.forEach<Either<Failure, List<ExchangeAsset>>>(
+      stream,
+      onData: (either) {
+        either.fold(
+          (failure) => add(AppendFailure(failure.message)),
+          (chunk) => add(AppendAssets(chunk)),
+        );
+        return state;
+      },
+      onError: (_, __) {
+        add(const AppendFailure('Erro desconhecido ao carregar assets'));
+        return state;
       },
     );
   }
 
   Future<void> _onAppendAssets(
-    _AppendAssets event,
+    AppendAssets event,
     Emitter<ExchangeDetailsState> emit,
   ) async {
     final current = state;
 
-    if (event.isError) {
-      emit(ExchangeDetailsError('Erro ao carregar os assets'));
-      return;
-    }
-
     if (current is ExchangeDetailsLoadedWithLoadingAssets) {
       final combined = [...current.exchangeDetails.assets, ...event.assets];
-      final updated = current.exchangeDetails.copyWith(assets: combined);
+      final visible = combined.take(20).toList();
 
-      final show = combined.take(20).toList();
       emit(
         ExchangeDetailsLoaded(
-          updated.copyWith(assets: show),
+          current.exchangeDetails.copyWith(assets: visible),
           allAssets: combined,
           hasMoreAssets: combined.length > 20,
           currentPage: 1,
@@ -141,12 +133,4 @@ class ExchangeDetailsBloc
       ),
     );
   }
-}
-
-class _AppendAssets extends ExchangeDetailsEvent {
-  final List<ExchangeAsset> assets;
-  final int? total;
-  final bool isError;
-
-  const _AppendAssets(this.assets, {this.total, this.isError = false});
 }

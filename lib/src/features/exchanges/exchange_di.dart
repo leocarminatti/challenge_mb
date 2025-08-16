@@ -36,8 +36,8 @@ class ExchangeInjection {
       () => GetExchangeMapUseCase(getIt<ExchangeRepository>()),
     );
 
-    getIt.registerLazySingleton<GetExchangeAssetsUseCase>(
-      () => GetExchangeAssetsUseCase(getIt<ExchangeRepository>()),
+    getIt.registerLazySingleton<GetExchangeAssetsStreamUseCase>(
+      () => GetExchangeAssetsStreamUseCase(getIt<ExchangeRepository>()),
     );
 
     getIt.registerLazySingleton<GetExchangesByIdsUseCase>(
@@ -60,7 +60,8 @@ class ExchangeInjection {
     getIt.unregister<ExchangeDetailsBloc>();
 
     getIt.unregister<GetExchangeMapUseCase>();
-    getIt.unregister<GetExchangeAssetsUseCase>();
+    getIt.unregister<GetExchangeAssetsStreamUseCase>();
+
     getIt.unregister<GetExchangesByIdsUseCase>();
 
     getIt.unregister<ExchangeRepositoryImpl>();

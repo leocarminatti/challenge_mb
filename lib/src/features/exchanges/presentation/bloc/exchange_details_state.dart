@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/exchange_asset.dart';
-import '../../domain/usecases/get_exchange_assets_usecase.dart';
+import '../../domain/domain.dart';
 
 abstract class ExchangeDetailsState extends Equatable {
   const ExchangeDetailsState();

@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:challenge_mb/core/infra/errors/failures.dart';
-import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchange_assets_usecase.dart';
+import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchange_assets_stream_usecase.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchange_details_bloc.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchange_details_event.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchange_details_state.dart';
@@ -12,12 +12,12 @@ import '../../../../../mocks/mocks.dart';
 
 void main() {
   late ExchangeDetailsBloc bloc;
-  late GetExchangeAssetsUseCase mockGetExchangeAssetsUseCase;
+  late GetExchangeAssetsStreamUseCase mockGetExchangeAssetsStreamUseCase;
 
   setUp(() {
-    mockGetExchangeAssetsUseCase =
-        TestMocks.createMockGetExchangeAssetsUseCase();
-    bloc = ExchangeDetailsBloc(mockGetExchangeAssetsUseCase);
+    mockGetExchangeAssetsStreamUseCase =
+        TestMocks.createMockGetExchangeAssetsStreamUseCase();
+    bloc = ExchangeDetailsBloc(mockGetExchangeAssetsStreamUseCase);
   });
 
   tearDown(() {
@@ -33,8 +33,8 @@ void main() {
       'deve emitir [ExchangeDetailsLoadedWithLoadingAssets, ExchangeDetailsLoaded] quando LoadExchangeDetails é adicionado com sucesso',
       build: () {
         when(
-          () => mockGetExchangeAssetsUseCase(any()),
-        ).thenAnswer((_) async => Right(EntitiesMocks.exchangeAssets));
+          () => mockGetExchangeAssetsStreamUseCase(any()),
+        ).thenAnswer((_) => Stream.value(Right(EntitiesMocks.exchangeAssets)));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadExchangeDetails(EntitiesMocks.exchanges[0])),
@@ -43,7 +43,7 @@ void main() {
         isA<ExchangeDetailsLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockGetExchangeAssetsUseCase(any())).called(1);
+        verify(() => mockGetExchangeAssetsStreamUseCase(any())).called(1);
       },
     );
 
@@ -51,8 +51,8 @@ void main() {
       'deve emitir [ExchangeDetailsLoadedWithLoadingAssets, ExchangeDetailsError] quando LoadExchangeDetails falha',
       build: () {
         when(
-          () => mockGetExchangeAssetsUseCase(any()),
-        ).thenAnswer((_) async => Left(ServerFailure('API Error')));
+          () => mockGetExchangeAssetsStreamUseCase(any()),
+        ).thenAnswer((_) => Stream.value(Left(ServerFailure('API Error'))));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadExchangeDetails(EntitiesMocks.exchanges[0])),
@@ -61,7 +61,7 @@ void main() {
         isA<ExchangeDetailsError>(),
       ],
       verify: (_) {
-        verify(() => mockGetExchangeAssetsUseCase(any())).called(1);
+        verify(() => mockGetExchangeAssetsStreamUseCase(any())).called(1);
       },
     );
 
@@ -69,8 +69,8 @@ void main() {
       'deve emitir [ExchangeDetailsLoadedWithLoadingAssets, ExchangeDetailsLoaded] quando LoadExchangeDetails é adicionado com lista vazia',
       build: () {
         when(
-          () => mockGetExchangeAssetsUseCase(any()),
-        ).thenAnswer((_) async => const Right([]));
+          () => mockGetExchangeAssetsStreamUseCase(any()),
+        ).thenAnswer((_) => Stream.value(const Right([])));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadExchangeDetails(EntitiesMocks.exchanges[0])),
@@ -79,7 +79,7 @@ void main() {
         isA<ExchangeDetailsLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockGetExchangeAssetsUseCase(any())).called(1);
+        verify(() => mockGetExchangeAssetsStreamUseCase(any())).called(1);
       },
     );
 
@@ -87,8 +87,8 @@ void main() {
       'deve carregar mais assets quando LoadMoreAssets é adicionado',
       build: () {
         when(
-          () => mockGetExchangeAssetsUseCase(any()),
-        ).thenAnswer((_) async => Right(EntitiesMocks.exchangeAssets));
+          () => mockGetExchangeAssetsStreamUseCase(any()),
+        ).thenAnswer((_) => Stream.value(Right(EntitiesMocks.exchangeAssets)));
         return bloc;
       },
       act: (bloc) async {
@@ -101,7 +101,7 @@ void main() {
         isA<ExchangeDetailsLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockGetExchangeAssetsUseCase(any())).called(1);
+        verify(() => mockGetExchangeAssetsStreamUseCase(any())).called(1);
       },
     );
   });

@@ -1,4 +1,3 @@
-import 'package:challenge_mb/core/widgets/ds_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,54 +11,86 @@ class ExchangeAssetsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return BlocBuilder<ExchangeDetailsBloc, ExchangeDetailsState>(
       bloc: bloc,
+      buildWhen: (prev, curr) =>
+          prev.runtimeType != curr.runtimeType ||
+          (prev is ExchangeDetailsLoaded &&
+              curr is ExchangeDetailsLoaded &&
+              (prev.exchangeDetails.assets.length !=
+                      curr.exchangeDetails.assets.length ||
+                  prev.hasMoreAssets != curr.hasMoreAssets)),
       builder: (context, state) {
-        return switch (state) {
-          ExchangeDetailsInitial() => const DsLoading(),
-          ExchangeDetailsLoading() => const DsLoading(),
-          ExchangeDetailsError() => ExchangesShowError(
-            message: 'Erro ao carregar os assets',
-            onRetry: () {},
-          ),
-          ExchangeDetailsLoadedWithLoadingAssets() => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Assets da Exchange',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const DsLoading(),
-              const SizedBox(height: 16),
-            ],
-          ),
-          ExchangeDetailsLoaded() => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Assets da Exchange (${state.allAssets.length})',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ExchangeAssetsTable(assets: state.exchangeDetails.assets),
-              const SizedBox(height: 16),
-              ExchangeLoadMoreButton(
-                bloc: bloc,
-                hasMoreAssets: state.hasMoreAssets,
-              ),
-            ],
-          ),
-          _ => const SizedBox.shrink(),
-        };
+        if (state is ExchangeDetailsInitial ||
+            state is ExchangeDetailsLoading) {
+          return const SliverToBoxAdapter(
+            child: SizedBox(
+              height: 56,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        if (state is ExchangeDetailsError) {
+          return SliverToBoxAdapter(
+            child: ExchangesShowError(
+              message: 'Erro ao carregar os assets',
+              onRetry: () {},
+            ),
+          );
+        }
+
+        if (state is ExchangeDetailsLoadedWithLoadingAssets) {
+          return const SliverToBoxAdapter(
+            child: SizedBox(
+              height: 56,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        if (state is ExchangeDetailsLoaded) {
+          final assets = state.exchangeDetails.assets;
+
+          return SliverList(
+            delegate: SliverChildBuilderDelegate((ctx, index) {
+              if (index == 0) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  child: Text(
+                    'Assets da Exchange (${state.allAssets.length})',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                );
+              } else if (index <= assets.length) {
+                final asset = assets[index - 1];
+                return ExchangeAssetRow(asset: asset, index: index - 1);
+              } else {
+                return Visibility(
+                  visible: state.hasMoreAssets,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    child: ExchangeLoadMoreButton(
+                      bloc: bloc,
+                      hasMoreAssets: state.hasMoreAssets,
+                    ),
+                  ),
+                );
+              }
+            }, childCount: assets.length + (state.hasMoreAssets ? 2 : 1)),
+          );
+        }
+
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
       },
     );
   }

@@ -1,4 +1,3 @@
-import 'package:challenge_mb/core/widgets/widgets.dart';
 import 'package:challenge_mb/src/features/exchanges/domain/domain.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/bloc.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/widgets/widgets.dart';
@@ -43,7 +42,9 @@ void main() {
 
     Widget createTestWidget() {
       return MaterialApp(
-        home: Scaffold(body: ExchangeAssetsList(bloc: mockBloc)),
+        home: Scaffold(
+          body: CustomScrollView(slivers: [ExchangeAssetsList(bloc: mockBloc)]),
+        ),
         debugShowCheckedModeBanner: false,
       );
     }
@@ -56,7 +57,7 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      expect(find.byType(DsLoading), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('deve renderizar loading quando carregando', (tester) async {
@@ -67,7 +68,7 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      expect(find.byType(DsLoading), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('deve renderizar erro quando falhar', (tester) async {
@@ -98,21 +99,19 @@ void main() {
         spotVolumeUsd: 15000000.0,
       );
 
-      final loadingState = ExchangeDetailsLoadedWithLoadingAssets(
+      final state = ExchangeDetailsLoadedWithLoadingAssets(
         ExchangeDetailsWithAssets(exchange: exchange, assets: []),
       );
-      when(() => mockBloc.stream).thenAnswer((_) => Stream.value(loadingState));
-      when(() => mockBloc.state).thenReturn(loadingState);
+
+      when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
+      when(() => mockBloc.state).thenReturn(state);
 
       await tester.pumpWidget(createTestWidget());
 
-      expect(find.text('Assets da Exchange'), findsOneWidget);
-      expect(find.byType(DsLoading), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('deve renderizar assets quando carregados com sucesso', (
-      tester,
-    ) async {
+    testWidgets('deve renderizar assets quando carregados', (tester) async {
       final exchange = Exchange(
         id: '1',
         name: 'Binance',
@@ -125,9 +124,9 @@ void main() {
       final state = ExchangeDetailsLoaded(
         ExchangeDetailsWithAssets(exchange: exchange, assets: mockAssets),
         allAssets: mockAssets,
-        hasMoreAssets: true,
+        hasMoreAssets: false,
         currentPage: 1,
-        assetsPerPage: 10,
+        assetsPerPage: 20,
       );
 
       when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
@@ -136,8 +135,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       expect(find.text('Assets da Exchange (2)'), findsOneWidget);
-      expect(find.byType(ExchangeAssetsTable), findsOneWidget);
-      expect(find.byType(ExchangeLoadMoreButton), findsOneWidget);
+      expect(find.byType(ExchangeAssetRow), findsNWidgets(2));
     });
 
     testWidgets('deve mostrar contador correto de assets', (tester) async {
@@ -155,7 +153,7 @@ void main() {
         allAssets: mockAssets,
         hasMoreAssets: false,
         currentPage: 1,
-        assetsPerPage: 10,
+        assetsPerPage: 20,
       );
 
       when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
@@ -183,7 +181,7 @@ void main() {
           allAssets: mockAssets,
           hasMoreAssets: true,
           currentPage: 1,
-          assetsPerPage: 10,
+          assetsPerPage: 20,
         );
 
         when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
@@ -210,7 +208,7 @@ void main() {
         allAssets: mockAssets,
         hasMoreAssets: false,
         currentPage: 1,
-        assetsPerPage: 10,
+        assetsPerPage: 20,
       );
 
       when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
@@ -219,8 +217,9 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       final titleFinder = find.text('Assets da Exchange (2)');
-      final titleWidget = tester.widget<Text>(titleFinder);
+      expect(titleFinder, findsOneWidget);
 
+      final titleWidget = tester.widget<Text>(titleFinder);
       expect(titleWidget.style?.fontWeight, FontWeight.bold);
     });
 
@@ -241,7 +240,7 @@ void main() {
         allAssets: mockAssets,
         hasMoreAssets: false,
         currentPage: 1,
-        assetsPerPage: 10,
+        assetsPerPage: 20,
       );
 
       when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
@@ -249,10 +248,11 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      final columns = find.byType(Column);
-      final column = tester.widget<Column>(columns.first);
+      final titleFinder = find.text('Assets da Exchange (2)');
+      expect(titleFinder, findsOneWidget);
 
-      expect(column.children.length, 5);
+      final titleWidget = tester.widget<Text>(titleFinder);
+      expect(titleWidget.style?.fontWeight, FontWeight.bold);
     });
 
     testWidgets('deve lidar com lista vazia de assets', (tester) async {
@@ -270,7 +270,7 @@ void main() {
         allAssets: [],
         hasMoreAssets: false,
         currentPage: 1,
-        assetsPerPage: 10,
+        assetsPerPage: 20,
       );
 
       when(() => mockBloc.stream).thenAnswer((_) => Stream.value(state));
@@ -279,7 +279,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       expect(find.text('Assets da Exchange (0)'), findsOneWidget);
-      expect(find.byType(ExchangeAssetsTable), findsOneWidget);
+      expect(find.byType(ExchangeAssetRow), findsNothing);
     });
   });
 }

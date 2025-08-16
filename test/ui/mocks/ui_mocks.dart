@@ -1,6 +1,4 @@
-import 'package:challenge_mb/src/features/exchanges/domain/entities/exchange.dart';
-import 'package:challenge_mb/src/features/exchanges/domain/entities/exchange_asset.dart';
-import 'package:challenge_mb/src/features/exchanges/domain/usecases/get_exchange_assets_usecase.dart';
+import 'package:challenge_mb/src/features/exchanges/domain/domain.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchange_details_bloc.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchange_details_state.dart';
 import 'package:challenge_mb/src/features/exchanges/presentation/bloc/exchanges_bloc.dart';
